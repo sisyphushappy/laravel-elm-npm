@@ -38,16 +38,26 @@ const getPrograms = function (done) {
  */
 const make = getPrograms.bind(null, (programs) => {
     const debug = process.env.NODE_ENV === 'production' ? '' : '--debug';
-    const command = `elm make ${programs.join(' ')} --output=${publicPath}/js/elm.js ${debug ? '' : '--optimize'}`;
 
-    return spawn(
-        command,
-        {
-            shell: true,
-            stdio: 'inherit',
-            cwd: cwd,
-        }
-    );
+    const camelToUnderscore = (key) => {
+        var result = key.replace( /([A-Z])/g, " $1" );
+        return result.split(' ').slice(1).join('_').toLowerCase();
+    };
+
+    programs.forEach(program => {
+        const program_name = camelToUnderscore(program.split('/')[0]);
+        const command =
+            `elm make ${program} --output=${publicPath}/js/${program_name}.js ${debug ? '' : '--optimize'}`;
+        spawn(
+            command,
+            {
+                shell: true,
+                stdio: 'inherit',
+                cwd: cwd,
+            }
+        );
+    });
+
 });
 
 /**
